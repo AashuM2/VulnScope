@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero">
+    <div class="hero-badge">🛡️ Security Scanner</div>
+    <h1>Web Application Security Scanner</h1>
+    <p>Assess the security posture of a website you own or are authorized to test.</p>
+    <div class="scan-box">
+        <input type="url" id="urlInput" placeholder="https://example.com" aria-label="Website URL" />
+        <button type="button" onclick="startScan()">Scan Now</button>
+    </div>
+    <p class="scan-safety-note">Only scan systems you own or have explicit permission to test. Active checks send network requests.</p>
+    <div id="scanStatus" class="status-box" style="display:none;">
+        <p id="statusText">Scanning...</p>
+        <div class="progress-bar"><div class="progress" id="progressBar"></div></div>
+    </div>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">🔍</div>
+            <div class="feature-title">7 Vulnerability Checks</div>
+            <div class="feature-desc">SQL Injection, XSS, SSL, Headers, and more</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">⚡</div>
+            <div class="feature-title">Dual Detection</div>
+            <div class="feature-desc">Static analysis + Active probing</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📊</div>
+            <div class="feature-title">Risk Scoring</div>
+            <div class="feature-desc">Instant 0-100 security score</div>
+        </div>
+        <div class="feature-card">
+            <div class="feature-icon">📄</div>
+            <div class="feature-title">PDF Reports</div>
+            <div class="feature-desc">Professional downloadable reports</div>
+        </div>
+    </div>
+</div>
+{% endblock %}

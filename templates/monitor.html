@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="monitor-page">
+    <div class="monitor-header">
+        <h2>🔴 Live Security Monitor</h2>
+        <p class="subtitle">Real-time security status of all monitored websites. Auto-refreshes every 30 seconds.</p>
+        <div class="live-indicator">
+            <span class="pulse"></span>
+            <span id="lastUpdated">Updating...</span>
+        </div>
+    </div>
+
+    <div class="monitor-stats">
+        <div class="stat-card critical-card">
+            <div class="stat-num" id="criticalCount">0</div>
+            <div class="stat-label">Critical</div>
+        </div>
+        <div class="stat-card high-card">
+            <div class="stat-num" id="highCount">0</div>
+            <div class="stat-label">High Risk</div>
+        </div>
+        <div class="stat-card medium-card">
+            <div class="stat-num" id="mediumCount">0</div>
+            <div class="stat-label">Medium Risk</div>
+        </div>
+        <div class="stat-card safe-card">
+            <div class="stat-num" id="safeCount">0</div>
+            <div class="stat-label">Safe</div>
+        </div>
+    </div>
+
+    <div id="monitorGrid" class="monitor-grid">
+        <div class="loading">Loading website statuses...</div>
+    </div>
+</div>
+
+<script>
+function fetchMonitorData() {
+    fetch('/monitor/data')
+    .then(res => res.json())
+    .then(data => {
+        const grid = document.getElementById('monitorGrid');
+        grid.innerHTML = '';
+        let critical = 0, high = 0, medium = 0, safe = 0;
+        if (data.length === 0) {
+            grid.innerHTML = '<div class="no-data">No websites being monitored. <a href="/schedule">Add websites to schedule</a> first.</div>';
+            return;
+        }
+        data.forEach(site => {
+            const score = site.risk_score || 0;
+            let statusClass, statusText, borderColor;
+            if (score >= 75) { statusClass = 'status-critical'; statusText = 'Critical Risk'; borderColor = '#ff4444'; critical++; }
+            else if (score >= 50) { statusClass = 'status-high'; statusText = 'High Risk'; borderColor = '#ff8800'; high++; }
+            else if (score >= 25) { statusClass = 'status-medium'; statusText = 'Medium Risk'; borderColor = '#ffcc00'; medium++; }
+            else { statusClass = 'status-safe'; statusText = 'Safe'; borderColor = '#00ff88'; safe++; }
+            const card = document.createElement('div');
+            card.className = `monitor-card ${statusClass}`;
+            card.style.borderLeftColor = borderColor;
+            card.innerHTML = `
+                <div class="monitor-card-header">
+                    <span class="monitor-url">${site.url}</span>
+                    <span class="monitor-status" style="color:${borderColor}">${statusText}</span>
+                </div>
+                <div class="monitor-score" style="color:${borderColor}">${score}<span class="score-max">/100</span></div>
+                <div class="monitor-details">
+                    <span>Vulnerabilities: <strong>${site.total_vulnerabilities || 0}</strong></span>
+                    <span>Last Scan: <strong>${site.last_scan || 'Never'}</strong></span>
+                </div>
+                <div class="monitor-actions">
+                    <a href="/results/${site.scan_id}" class="btn-view">View Report</a>
+                    <a href="/history" class="btn-history">History</a>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+        document.getElementById('criticalCount').textContent = critical;
+        document.getElementById('highCount').textContent = high;
+        document.getElementById('mediumCount').textContent = medium;
+        document.getElementById('safeCount').textContent = safe;
+        document.getElementById('lastUpdated').textContent = 'Last updated: ' + new Date().toLocaleTimeString();
+    })
+    .catch(() => {
+        document.getElementById('monitorGrid').innerHTML = '<div class="no-data">Error loading data.</div>';
+    });
+}
+fetchMonitorData();
+setInterval(fetchMonitorData, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,79 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="history-page">
+    <h2>Scan History</h2>
+
+    {% if scans %}
+    <div class="trend-chart-box">
+        <h3>Risk Score Trend</h3>
+        <canvas id="trendChart" height="80"></canvas>
+    </div>
+
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>URL</th>
+                <th>Scanned At</th>
+                <th>Risk Score</th>
+                <th>Vulnerabilities</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for scan in scans %}
+            <tr>
+                <td>{{ scan['url'] }}</td>
+                <td>{{ scan['scanned_at'] }}</td>
+                <td>
+                    <span class="score-badge
+                        {% if scan['risk_score'] >= 75 %}critical
+                        {% elif scan['risk_score'] >= 50 %}high
+                        {% elif scan['risk_score'] >= 25 %}medium
+                        {% else %}low{% endif %}">
+                        {{ scan['risk_score'] }}/100
+                    </span>
+                </td>
+                <td>{{ scan['total_vulnerabilities'] }}</td>
+                <td><a href="/results/{{ scan['id'] }}" class="btn-view">View Report</a></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <div class="no-data">
+        <p>No scans yet. <a href="/">Scan your first website</a></p>
+    </div>
+    {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% if scans %}
+const labels = {{ scans | map(attribute='scanned_at') | list | tojson }};
+const scores = {{ scans | map(attribute='risk_score') | list | tojson }};
+const ctx = document.getElementById('trendChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: labels,
+        datasets: [{
+            label: 'Risk Score',
+            data: scores,
+            borderColor: '#00ff88',
+            backgroundColor: 'rgba(0,255,136,0.1)',
+            tension: 0.3,
+            fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        scales: {
+            y: { min: 0, max: 100, grid: { color: '#222' }, ticks: { color: '#888' } },
+            x: { grid: { color: '#222' }, ticks: { color: '#888', maxTicksLimit: 8 } }
+        },
+        plugins: { legend: { labels: { color: '#888' } } }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}

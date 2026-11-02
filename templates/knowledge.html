@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="knowledge-page">
+    <div class="knowledge-header">
+        <h2>📚 Security Knowledge Base</h2>
+        <p class="subtitle">A practical reference to the seven vulnerability categories checked by VulnScope, with examples, detection notes, and remediation guidance.</p>
+    <div class="knowledge-notice"><strong>Use responsibly:</strong> Scan only websites you own or have explicit permission to test. Active checks send test requests and may create logs or trigger security alerts. Findings are indicators for review, not a guarantee that a system is vulnerable or secure.</div>
+    </div>
+
+    <div class="knowledge-grid">
+
+        <div class="knowledge-card">
+            <div class="knowledge-card-header">
+                <span class="vuln-icon">🔐</span>
+                <div>
+                    <h3>SSL/TLS Certificate Issues</h3>
+                    <span class="severity-tag critical">Critical</span>
+                </div>
+            </div>
+            <div class="knowledge-body">
+                <div class="knowledge-section">
+                    <h4>What is it?</h4>
+                    <p>SSL/TLS encrypts traffic between a browser and a web server. A missing, expired, or untrusted certificate means the browser cannot reliably verify the server's identity; it does not automatically mean the connection is unencrypted.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>Real World Example</h4>
+                    <p>If a site uses plain HTTP, someone on an untrusted network may be able to read or alter traffic. An invalid certificate is a different problem: encryption may still exist, but the browser cannot reliably verify the server identity.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>How VulnScope Detects It</h4>
+                    <span class="method-tag static">Static</span>
+                    <p>Attempts an SSL handshake on port 443. If it fails or the certificate is invalid, the vulnerability is flagged.</p>
+                </div>
+                <div class="knowledge-section fix-section">
+                    <h4>✅ How to Fix</h4>
+                    <p>Install a valid SSL certificate. Use <strong>Let's Encrypt</strong> — it's free and widely trusted.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="knowledge-card">
+            <div class="knowledge-card-header">
+                <span class="vuln-icon">🛡️</span>
+                <div>
+                    <h3>Missing Security Headers</h3>
+                    <span class="severity-tag high">High / Medium</span>
+                </div>
+            </div>
+            <div class="knowledge-body">
+                <div class="knowledge-section">
+                    <h4>What is it?</h4>
+                    <p>HTTP security headers are instructions a web server sends to the browser telling it how to behave. Missing headers leave the browser without important protections.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>Headers VulnScope Checks</h4>
+                    <ul>
+                        <li><strong>Content-Security-Policy</strong> — prevents script injection</li>
+                        <li><strong>X-Frame-Options</strong> — prevents clickjacking</li>
+                        <li><strong>Strict-Transport-Security</strong> — forces HTTPS</li>
+                        <li><strong>X-Content-Type-Options</strong> — prevents MIME sniffing</li>
+                        <li><strong>Referrer-Policy</strong> — controls how much referrer information is shared</li>
+                        <li><strong>X-XSS-Protection</strong> — legacy header; modern browsers generally rely on CSP and safe output encoding instead</li>
+                    </ul>
+                </div>
+                <div class="knowledge-section">
+                    <h4>Real World Example</h4>
+                    <p>A page without a suitable Content-Security-Policy may have fewer safeguards if an attacker manages to inject script content. Missing X-Frame-Options or frame-ancestors can also make clickjacking easier.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>How VulnScope Detects It</h4>
+                    <span class="method-tag static">Static</span>
+                    <p>Reads HTTP response headers from a normal GET request and checks for selected security headers. A missing header is a hardening finding, not proof that the site is exploitable.</p>
+                </div>
+                <div class="knowledge-section fix-section">
+                    <h4>✅ How to Fix</h4>
+                    <p>Add missing headers to your server config. For Apache: <code>Header set X-Frame-Options "DENY"</code> in .htaccess.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="knowledge-card">
+            <div class="knowledge-card-header">
+                <span class="vuln-icon">💉</span>
+                <div>
+                    <h3>SQL Injection</h3>
+                    <span class="severity-tag critical">Critical</span>
+                </div>
+            </div>
+            <div class="knowledge-body">
+                <div class="knowledge-section">
+                    <h4>What is it?</h4>
+                    <p>SQL Injection is an attack where a hacker inserts malicious SQL code into an input field. If the website passes this input to the database without sanitization, the attacker can read, modify, or delete the entire database.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>Real World Example</h4>
+                    <p>A login form accepts username. Attacker types: <code>' OR '1'='1</code>. This makes the SQL query always true — logging in without a password.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>How VulnScope Detects It</h4>
+                    <span class="method-tag active">Active</span>
+                    <p>Sends actual SQL payloads (<code>'</code>, <code>' OR '1'='1</code>) and checks if the response contains SQL error messages.</p>
+                </div>
+                <div class="knowledge-section fix-section">
+                    <h4>✅ How to Fix</h4>
+                    <p>Always use <strong>prepared statements</strong> and <strong>parameterized queries</strong>. Never concatenate user input directly into SQL strings.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="knowledge-card">
+            <div class="knowledge-card-header">
+                <span class="vuln-icon">⚡</span>
+                <div>
+                    <h3>Cross-Site Scripting (XSS)</h3>
+                    <span class="severity-tag high">High</span>
+                </div>
+            </div>
+            <div class="knowledge-body">
+                <div class="knowledge-section">
+                    <h4>What is it?</h4>
+                    <p>XSS occurs when a website reflects user input without sanitization. An attacker can inject malicious JavaScript that runs in the victim's browser — stealing cookies or redirecting users.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>Real World Example</h4>
+                    <p>A search box reflects your query. Attacker types <code>&lt;script&gt;alert('hacked')&lt;/script&gt;</code> — if unescaped, this script executes in every visitor's browser.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>How VulnScope Detects It</h4>
+                    <span class="method-tag active">Active</span>
+                    <p>Sends XSS payloads via common parameter names and checks if the payload appears unescaped in the response.</p>
+                </div>
+                <div class="knowledge-section fix-section">
+                    <h4>✅ How to Fix</h4>
+                    <p>Sanitize and escape all user input. Use CSP headers. Never use <code>innerHTML</code> with untrusted data.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="knowledge-card">
+            <div class="knowledge-card-header">
+                <span class="vuln-icon">↪️</span>
+                <div>
+                    <h3>Open Redirect</h3>
+                    <span class="severity-tag medium">Medium</span>
+                </div>
+            </div>
+            <div class="knowledge-body">
+                <div class="knowledge-section">
+                    <h4>What is it?</h4>
+                    <p>Open redirect lets an attacker redirect users from a trusted website to a malicious one. Users trust the original domain and don't notice the redirect to a fake site.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>Real World Example</h4>
+                    <p><code>bank.com/redirect?url=evil.com</code> takes users to a fake banking site that steals credentials — but they trusted it because it started with bank.com.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>How VulnScope Detects It</h4>
+                    <span class="method-tag static">Static</span>
+                    <span class="method-tag active">Active</span>
+                    <p>Static scans for redirect parameters. Active sends an external redirect payload and checks if the server follows it.</p>
+                </div>
+                <div class="knowledge-section fix-section">
+                    <h4>✅ How to Fix</h4>
+                    <p>Validate all redirect URLs against a whitelist. Never redirect to user-supplied URLs without strict validation.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="knowledge-card">
+            <div class="knowledge-card-header">
+                <span class="vuln-icon">📁</span>
+                <div>
+                    <h3>Directory Traversal</h3>
+                    <span class="severity-tag critical">Critical</span>
+                </div>
+            </div>
+            <div class="knowledge-body">
+                <div class="knowledge-section">
+                    <h4>What is it?</h4>
+                    <p>Directory traversal allows an attacker to access files outside the web directory by using <code>../</code> sequences to navigate up the directory tree.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>Real World Example</h4>
+                    <p><code>site.com?file=../../etc/passwd</code> could expose the Linux password file if the server doesn't validate file paths.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>How VulnScope Detects It</h4>
+                    <span class="method-tag active">Active</span>
+                    <p>Sends traversal payloads like <code>?file=../../etc/passwd</code> and checks if the response contains system file content.</p>
+                </div>
+                <div class="knowledge-section fix-section">
+                    <h4>✅ How to Fix</h4>
+                    <p>Never pass user input directly to file system functions. Use a whitelist of allowed filenames and validate all paths server-side.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="knowledge-card">
+            <div class="knowledge-card-header">
+                <span class="vuln-icon">🍪</span>
+                <div>
+                    <h3>Cookie & Authentication Issues</h3>
+                    <span class="severity-tag medium">Medium</span>
+                </div>
+            </div>
+            <div class="knowledge-body">
+                <div class="knowledge-section">
+                    <h4>What is it?</h4>
+                    <p>Cookies often store session identifiers. Missing security attributes can expose a session to risks, depending on the application and transport; cookie flags reduce risk but do not replace sound authentication and CSRF defenses.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>Three Cookie Security Flags</h4>
+                    <ul>
+                        <li><strong>HttpOnly</strong> — JavaScript cannot access the cookie</li>
+                        <li><strong>Secure</strong> — Cookie only sent over HTTPS</li>
+                        <li><strong>SameSite</strong> — limits cross-site cookie sending and helps mitigate some CSRF attacks</li>
+                    </ul>
+                </div>
+                <div class="knowledge-section">
+                    <h4>Real World Example</h4>
+                    <p>If a session cookie lacks HttpOnly, injected JavaScript may be able to read it. If Secure is missing, a cookie could be sent over HTTP. SameSite helps reduce some cross-site request risks, but it is not a complete replacement for CSRF protection.</p>
+                </div>
+                <div class="knowledge-section">
+                    <h4>How VulnScope Detects It</h4>
+                    <span class="method-tag static">Static</span>
+                    <p>Reads Set-Cookie response headers and checks whether HttpOnly, Secure, and SameSite attributes are present. Cookie flags are assessed in the context of HTTPS and the application's authentication design.</p>
+                </div>
+                <div class="knowledge-section fix-section">
+                    <h4>✅ How to Fix</h4>
+                    <p>Set all three flags: <code>Set-Cookie: session=abc; HttpOnly; Secure; SameSite=Strict</code></p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="schedule-page">
+    <h2>Scheduled Scans</h2>
+    <p class="subtitle">Register websites for automatic scanning at set intervals.</p>
+
+    <div class="add-schedule-box">
+        <h3>Add New Schedule</h3>
+        <div class="schedule-form">
+            <input type="text" id="scheduleUrl" placeholder="https://example.com" />
+            <select id="scheduleFrequency">
+                <option value="1">Every 1 day</option>
+                <option value="3">Every 3 days</option>
+                <option value="7" selected>Every 7 days</option>
+                <option value="14">Every 14 days</option>
+                <option value="30">Every 30 days</option>
+            </select>
+            <input type="email" id="scheduleEmail" placeholder="Alert email (optional)" />
+            <button onclick="addSchedule()">Add Schedule</button>
+        </div>
+    </div>
+
+    <div class="scheduled-list">
+        <h3>Active Schedules</h3>
+        {% if scheduled %}
+        <table class="history-table">
+            <thead>
+                <tr>
+                    <th>URL</th>
+                    <th>Frequency</th>
+                    <th>Last Scanned</th>
+                    <th>Next Scan</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in scheduled %}
+                {% if item['is_active'] %}
+                <tr>
+                    <td>{{ item['url'] }}</td>
+                    <td>Every {{ item['frequency_days'] }} days</td>
+                    <td>{{ item['last_scanned'] or 'Never' }}</td>
+                    <td>{{ item['next_scan'] or 'Pending' }}</td>
+                    <td>
+                        <button class="btn-delete" onclick="removeSchedule({{ item['id'] }}, this)">Remove</button>
+                    </td>
+                </tr>
+                {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="no-data">No scheduled scans yet.</div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function addSchedule() {
+    const url = document.getElementById('scheduleUrl').value.trim();
+    const frequency = document.getElementById('scheduleFrequency').value;
+    const email = document.getElementById('scheduleEmail').value.trim();
+    if (!url) { alert('Please enter a URL'); return; }
+    fetch('/schedule/add', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, frequency, email })
+    }).then(res => res.json()).then(data => {
+        if (data.success) { setTimeout(() => location.reload(), 1000); }
+    });
+}
+
+function removeSchedule(id, btn) {
+    fetch('/schedule/delete/' + id, { method: 'POST' })
+    .then(res => res.json()).then(data => {
+        if (data.success) { btn.closest('tr').remove(); }
+    });
+}
+</script>
+{% endblock %}

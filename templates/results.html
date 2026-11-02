@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="results-page">
+    <div class="scan-summary">
+        <h2>Scan Results for <span class="url-text">{{ scan['url'] }}</span></h2>
+        <p class="scan-time">Scanned at: {{ scan['scanned_at'] }}</p>
+        <div class="risk-score-box" style="border-color: {{ color }};">
+            <div class="risk-number" style="color: {{ color }};">{{ scan['risk_score'] }}</div>
+            <div class="risk-label">Risk Score / 100</div>
+            <div class="risk-grade" style="color: {{ color }};">{{ grade }}</div>
+        </div>
+        <div class="stats-row">
+            <div class="stat-box critical">
+                <div class="stat-number">{{ vulnerabilities | selectattr('severity', 'equalto', 'Critical') | list | length }}</div>
+                <div class="stat-label">Critical</div>
+            </div>
+            <div class="stat-box high">
+                <div class="stat-number">{{ vulnerabilities | selectattr('severity', 'equalto', 'High') | list | length }}</div>
+                <div class="stat-label">High</div>
+            </div>
+            <div class="stat-box medium">
+                <div class="stat-number">{{ vulnerabilities | selectattr('severity', 'equalto', 'Medium') | list | length }}</div>
+                <div class="stat-label">Medium</div>
+            </div>
+        </div>
+    </div>
+
+    {% if vulnerabilities %}
+    <div class="vuln-list">
+        <h3>Vulnerabilities Found</h3>
+        {% for vuln in vulnerabilities %}
+        <div class="vuln-card {{ vuln['severity'] | lower }}">
+            <div class="vuln-header">
+                <span class="vuln-name">{{ vuln['vuln_type'] }}</span>
+                <span class="severity-badge {{ vuln['severity'] | lower }}">{{ vuln['severity'] }}</span>
+                <span class="severity-badge {{ vuln['detected_by'] | lower }}">{{ vuln['detected_by'] }}</span>
+            </div>
+            <div class="vuln-body">
+                <p><strong>What is it?</strong> {{ vuln['description'] }}</p>
+                <p class="fix"><strong>How to fix:</strong> {{ vuln['fix_suggestion'] }}</p>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="research-table">
+        <h3>Research Comparison: Static vs Active Detection</h3>
+        <table class="comparison-table">
+            <thead>
+                <tr>
+                    <th>Vulnerability</th>
+                    <th>Static Analysis</th>
+                    <th>Active Probing</th>
+                    <th>Detection Method Used</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vuln in vulnerabilities %}
+                <tr>
+                    <td>{{ vuln['vuln_type'] }}</td>
+                    <td class="{% if vuln['detected_by'] == 'Static' %}yes{% else %}no{% endif %}">
+                        {% if vuln['detected_by'] == 'Static' %}✓ Detected{% else %}✗ Missed{% endif %}
+                    </td>
+                    <td class="{% if vuln['detected_by'] == 'Active' %}yes{% else %}no{% endif %}">
+                        {% if vuln['detected_by'] == 'Active' %}✓ Detected{% else %}✗ Not Tested{% endif %}
+                    </td>
+                    <td>{{ vuln['detected_by'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="no-vulns">
+        <h3>✅ No vulnerabilities found!</h3>
+        <p>This website appears to be well secured.</p>
+    </div>
+    {% endif %}
+
+    <div class="action-buttons">
+        <a href="/" class="btn-primary">Scan Another URL</a>
+        <a href="/history" class="btn-secondary">View History</a>
+        <a href="/report/{{ scan['id'] }}" class="btn-download">Download PDF Report</a>
+    </div>
+</div>
+{% endblock %}

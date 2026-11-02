@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VulnScope - Web Security Scanner</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <span class="brand-icon">🛡️</span>
+                <span class="brand-text">VulnScope</span>
+            </div>
+            <nav class="sidebar-nav">
+                <a title="Home" href="{{ url_for('home') }}" class="nav-item {% if request.path == '/' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">🏠</span>
+                    <span>Home</span>
+                </a>
+                <a title="History" href="{{ url_for('history') }}" class="nav-item {% if request.path == '/history' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">📋</span>
+                    <span>History</span>
+                </a>
+                <a title="Schedule" href="{{ url_for('schedule_page') }}" class="nav-item {% if request.path == '/schedule' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">📅</span>
+                    <span>Schedule</span>
+                </a>
+                <a title="Monitor" href="{{ url_for('monitor') }}" class="nav-item {% if request.path == '/monitor' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">🔴</span>
+                    <span>Monitor</span>
+                </a>
+                <a title="Knowledge" href="{{ url_for('knowledge') }}" class="nav-item {% if request.path == '/knowledge' %}active{% endif %}">
+                    <span class="nav-icon" aria-hidden="true">📚</span>
+                    <span>Knowledge</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                {% if current_user.is_authenticated %}
+                <div class="user-info">
+                    <span class="user-avatar">👤</span>
+                    <span class="user-name">{{ current_user.username }}</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="logout-btn" title="Sign out">Logout</a>
+                {% endif %}
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
